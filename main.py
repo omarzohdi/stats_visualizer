@@ -11,8 +11,9 @@ def main():
     workbook_path = r"./stats/github_data.xlsx"
     repo_url = "omarzohdi/omarzohdi.github.io"
 
-    sv = StatVis(repo_url, 'xls')
-    sv.run_github_statcollectors()
+    sv = StatVis(repo_url)
+    sv.collect_github_stats(True)
+    sv.write_github_stats('xlsx')
 
 if __name__ == "__main__":
     main()
