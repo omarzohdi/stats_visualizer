@@ -37,13 +37,12 @@ class StatVis:
         if not self.general_data:
             self.general_data = {'index_labels': ['Name', 'Visitors', 'Unique Visitors', 'Watchers', 'Forks', 'Stargazers', 'Clones',
                                                   'Unique Clones'],
-                                 'data': {}
-                                 }
+                                 'data': {}}
         if not self.visitors_data:
             self.visitors_data = {'index_labels': ['Visitors', 'Unique Visitors'], 'data': {}}
 
         if not self.clones_data:
-            self.clones_data = {'index_labels': ['Clones', 'Unique Clones'], 'data': {} }
+            self.clones_data = {'index_labels': ['Clones', 'Unique Clones'], 'data': {}}
 
         if not self.stargazers_data:
             self.stargazers_data = {'data': {}}
@@ -51,7 +50,7 @@ class StatVis:
         #if not self.referral_data:
         #      self.referral_data = {'index_labels': [], 'data': {} }
 
-    #  if not self.stargazers_data:
+        #  if not self.stargazers_data:
 
 
 
@@ -98,22 +97,23 @@ class StatVis:
                                                                                                     sheet_name='Views')
         pd.DataFrame(self.clones_data['data'], index=self.clones_data['index_labels']).to_excel(self.xlsx_writer,
                                                                                                 sheet_name='Clones')
-      #  pd.DataFrame(self.stargazers_data['data']).to_excel(self.xlsx_writer, sheet_name='Star Gazers')
-        # pd.DataFrame(self.referral_data['data'], index=self.referral_data['index_labels']).to_excel(self.xlsx_writer, sheet_name='Referrals')
+
+        #pd.DataFrame(pd.concat(pd.Series(self.stargazers_data['data']),ignore_index=True, axis=1)).to_excel(self.xlsx_writer, sheet_name='Star Gazers', index=False)
+        #pd.DataFrame(self.referral_data['data'], index=self.referral_data['index_labels']).to_excel(self.xlsx_writer, sheet_name='Referrals')
 
         self.xlsx_writer.close()
 
     def __collect_stargazers_stats(self):
         stardates = self.repo.get_stargazers_with_dates()
 
-      #  for stardate in stardates:
-      #      if stardate.starred_at not in self.stargazers_data['data']:
-      #          self.stargazers_data['data'][stardate.starred_at] = []
+        # Remove empty usernames
+        stardates = [x for x in stardates if x.user.name]
 
-            #if (stardate.user.name not in self.stargazers_data['data'][stardate.starred_at]) and stardate.user.name:
-            #    self.stargazers_data['data'][stardate.starred_at].append(stardate.user.name)
-
-        #print(self.stargazers_data)
+        # Create build dict and create list based on date
+        for stardate in stardates:
+            if stardate.starred_at.date() not in self.stargazers_data['data']:
+                self.stargazers_data['data'][stardate.starred_at.date()] = []
+            self.stargazers_data['data'][stardate.starred_at.date()].append(stardate.user.name)
 
     def __collect_general_stats(self):
         watches = self.repo.get_subscribers().totalCount
@@ -161,7 +161,7 @@ class StatVis:
         self.__collect_general_stats()
         self.__collect_visitors_stats()
         self.__collect_clones_stats()
-        #self.__collect_stargazers_stats()
+        self.__collect_stargazers_stats()
 
         #self.__collect_referrals_stats()
 
