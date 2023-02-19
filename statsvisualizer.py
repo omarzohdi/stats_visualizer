@@ -45,15 +45,10 @@ class StatVis:
             self.clones_data = {'index_labels': ['Clones', 'Unique Clones'], 'data': {}}
 
         if not self.stargazers_data:
-            self.stargazers_data = {'data': {}}
+            self.stargazers_data = {'index_labels': ['Count'],'data': {}}
 
-        #if not self.referral_data:
-        #      self.referral_data = {'index_labels': [], 'data': {} }
-
-        #  if not self.stargazers_data:
-
-
-
+        if not self.referral_data:
+            self.referral_data = {'index_labels': ['Views', 'Unique Visitors'], 'data': {}, 'timeframes': {}}
 
     def __load_file_data (self,filename):
         filedir = self.dir + filename
@@ -97,9 +92,10 @@ class StatVis:
                                                                                                     sheet_name='Views')
         pd.DataFrame(self.clones_data['data'], index=self.clones_data['index_labels']).to_excel(self.xlsx_writer,
                                                                                                 sheet_name='Clones')
+        pd.DataFrame(self.stargazers_data['data'], index=self.stargazers_data['index_labels']).transpose().to_excel(self.xlsx_writer,
+                                                                                                    sheet_name='Stargazers')
 
-        #pd.DataFrame(pd.concat(pd.Series(self.stargazers_data['data']),ignore_index=True, axis=1)).to_excel(self.xlsx_writer, sheet_name='Star Gazers', index=False)
-        #pd.DataFrame(self.referral_data['data'], index=self.referral_data['index_labels']).to_excel(self.xlsx_writer, sheet_name='Referrals')
+        pd.DataFrame(self.referral_data['data'], index=self.referral_data['index_labels']).to_excel(self.xlsx_writer, sheet_name='Referrals')
 
         self.xlsx_writer.close()
 
@@ -112,8 +108,8 @@ class StatVis:
         # Create build dict and create list based on date
         for stardate in stardates:
             if stardate.starred_at.date() not in self.stargazers_data['data']:
-                self.stargazers_data['data'][stardate.starred_at.date()] = []
-            self.stargazers_data['data'][stardate.starred_at.date()].append(stardate.user.name)
+                self.stargazers_data['data'][stardate.starred_at.date()] = 0
+            self.stargazers_data['data'][stardate.starred_at.date()] += 1
 
     def __collect_general_stats(self):
         watches = self.repo.get_subscribers().totalCount
@@ -121,16 +117,17 @@ class StatVis:
         clones = self.repo.get_clones_traffic()
         stars = self.repo.get_stargazers().totalCount
         views = self.repo.get_views_traffic()
+        date_string = str(date.today())
 
-        if date.today() not in self.general_data['data']:
-            self.general_data['data'][date.today()] = [self.repo.name, views["count"], views["uniques"], watches, forks, stars, clones["count"],clones["uniques"]]
+        if date_string not in self.general_data['data']:
+            self.general_data['data'][date_string] = [self.repo.name, views["count"], views["uniques"], watches, forks, stars, clones["count"],clones["uniques"]]
             
     def __collect_visitors_stats(self):
         visitors = self.repo.get_views_traffic()
 
         for visitor in visitors["views"]:
             if visitor.timestamp not in self.visitors_data['data']:
-                self.visitors_data['data'][visitor.timestamp] = [ visitor.count, visitor.uniques]
+                self.visitors_data['data'][visitor.timestamp] = [visitor.count, visitor.uniques]
 
     def __collect_clones_stats(self):
         clones = self.repo.get_clones_traffic()
@@ -141,15 +138,21 @@ class StatVis:
 
     def __collect_referrals_stats(self):
         referrals = self.repo.get_top_referrers()
+        date_string = str(date.today())
+        data_totals = self.referral_data['data']
 
-        #if date.today() not in self.referral_data['index_labels']:
-        #    for ref in referrals:
-        #        self.referral_data['index_labels'].append(date.today())
-        #        self.referral_data['data'][ref.referrer] =
-        #        self.referral_data['data']["Views"].append(ref.count)
-        #        self.referral_data['data']["Unique Referrals"].append(ref.uniques)
+        # todo clean up and make entire function more readable
+        if date_string not in self.referral_data['timeframes']:
+            self.referral_data['timeframes'][date_string] = []
+            for ref in referrals:
+                self.referral_data['timeframes'][date_string].append(ref.raw_data)
+                data_totals.setdefault(ref.referrer, [0,0])
 
-        # print( self.referral_data)
+        # calculate cumulative data
+        for timeframe, ref_info in self.referral_data['timeframes'].items():
+            for top_ref in ref_info:
+                data_totals[top_ref['referrer']][0] += int(top_ref['count'])
+                data_totals[top_ref['referrer']][1] += int(top_ref['uniques'])
 
     def collect_github_stats(self, load=True):
         if load:
@@ -163,7 +166,7 @@ class StatVis:
         self.__collect_clones_stats()
         self.__collect_stargazers_stats()
 
-        #self.__collect_referrals_stats()
+        self.__collect_referrals_stats()
 
     def write_github_stats(self, ftype='bin'):
         if ftype == 'bin':
