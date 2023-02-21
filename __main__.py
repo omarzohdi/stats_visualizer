@@ -1,25 +1,24 @@
 import argparse
-import os.path
+from statsvisualizer import StatsVisualizer as statVis
 
-from statsvisualizer import StatVis
-
-
-def main():
+def cli():
     # This is the result of a -h command
     parser = argparse.ArgumentParser(description="Welcome to the Stats Collector! - "
                                                  "Here you'll be able to collect stats for Github and Google analytics")
     parser.add_argument("--repo", help="URL of The Github repository to collect data from", default="A")
     args = parser.parse_args()
 
-    workbook_path = r"./stats/github_data.xlsx"
-    repo_url = "omarzohdi/omarzohdi.github.io"
-    token = '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'
-
-    sv = StatVis(repo_url, github_token=token, output_dir='stats')
-    sv.collect_github_stats(load_binary=True)
-    sv.write_github_stats('json')
-    sv.write_github_stats('bin')
-    sv.write_github_stats('xlsx')
 
 if __name__ == "__main__":
-    main()
+    #cli()  # todo add cli integration here.
+
+    repo_url_web = "omarzohdi/omarzohdi.github.io"
+    repo_url_sot = "omarzohdi/Soteria"
+    token = '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'
+
+    sv = statVis()
+    sv.init_github_user_info(token)
+    sv.add_github_repo_info(repo_url_web, output_dir='stats')
+    sv.add_github_repo_info(repo_url_sot, output_dir='stats')
+
+    sv.collect_all_repos_stats()
