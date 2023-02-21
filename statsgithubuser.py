@@ -17,5 +17,7 @@ class StatsGitHubUser:
             repo = grStats(repo_inst, output_dir)
             self._repos.append(repo)
 
+        return len(self._repos) - 1
+
     def get_repos_list(self):
         return self._repos

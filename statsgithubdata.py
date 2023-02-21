@@ -93,14 +93,13 @@ class GithubRepoStats:
         referrals = self._repo.get_top_referrers()
         data_totals = self._github_data['referral_data']['data']
 
-        # todo clean up and make entire function more readable
         if date_string not in self._github_data['referral_data']['timeframes']:
             self._github_data['referral_data']['timeframes'][date_string] = []
             for ref in referrals:
                 self._github_data['referral_data']['timeframes'][date_string].append(ref.raw_data)
                 data_totals.setdefault(ref.referrer, [0, 0])
 
-                # calculate cumulative data
+        # calculate cumulative data
         for timeframe, ref_info in self._github_data['referral_data']['timeframes'].items():
             for top_ref in ref_info:
                 data_totals[top_ref['referrer']][0] += int(top_ref['count'])

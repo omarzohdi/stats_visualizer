@@ -20,5 +20,4 @@ if __name__ == "__main__":
     sv.init_github_user_info(token)
     sv.add_github_repo_info(repo_url_web, output_dir='stats')
     sv.add_github_repo_info(repo_url_sot, output_dir='stats')
-
     sv.collect_all_repos_stats()
