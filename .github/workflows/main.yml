@@ -1,10 +1,11 @@
 name: "Collect GitHub Stats"
 on:
+  workflow_dispatch:
   schedule:
   - cron: "0 0 * * *"
   
 jobs:
-  stats collector:
+  statscollector:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo content
