@@ -5,6 +5,7 @@ from datetime import date
 
 import pandas as pd
 
+
 class GithubRepoStats:
     _repo = None
     _dir = None
@@ -32,13 +33,14 @@ class GithubRepoStats:
         write_function = pickle.load
         filedir = os.path.join(self._dir, "github_data")
 
-        if not os.path.isdir(filedir) or (not os.path.isfile(filedir) and not os.path.isfile(filedir+".json")):
-            self.__init_github_data_dicts()
-            return
-        elif os.path.isfile(filedir+".json"):
-            filedir += ".json"
-            access_type = 'r'
-            write_function = json.load
+        if not os.path.isfile(filedir):
+            if os.path.isfile(filedir+".json"):
+                filedir += ".json"
+                access_type = 'r'
+                write_function = json.load
+            else:
+                self.__init_github_data_dicts()
+                return
 
         with open(filedir, access_type) as file_handle:
             self._github_data = write_function(file_handle)
@@ -95,15 +97,12 @@ class GithubRepoStats:
 
         if date_string not in self._github_data['referral_data']['timeframes']:
             self._github_data['referral_data']['timeframes'][date_string] = []
+
             for ref in referrals:
                 self._github_data['referral_data']['timeframes'][date_string].append(ref.raw_data)
                 data_totals.setdefault(ref.referrer, [0, 0])
-
-        # calculate cumulative data
-        for timeframe, ref_info in self._github_data['referral_data']['timeframes'].items():
-            for top_ref in ref_info:
-                data_totals[top_ref['referrer']][0] += int(top_ref['count'])
-                data_totals[top_ref['referrer']][1] += int(top_ref['uniques'])
+                data_totals[ref.referrer][0] += int(ref.count)
+                data_totals[ref.referrer][1] += int(ref.uniques)
 
     def __collect_stargazers_stats(self):
         stardates = self._repo.get_stargazers_with_dates()
@@ -158,6 +157,3 @@ class GithubRepoStats:
             self.__write_xlsx_workbook()
         else:
             self.__write_github_data_file(file_type)
-
-
-
