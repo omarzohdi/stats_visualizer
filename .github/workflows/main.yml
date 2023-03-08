@@ -24,8 +24,7 @@ jobs:
       - name: execute python script
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-          GITHUB_WEB_REPO: "omarzohdi/omarzohdi.github.io"
-          GITHUB_SOT_REPO: "omarzohdi/Soteria"
+          GITHUB_VIS_REPO: "omarzohdi/github_stats_visualizer"
         run: python __main__.py
 
       - name: commit new files
