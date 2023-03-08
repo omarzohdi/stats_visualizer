@@ -3,19 +3,22 @@ import os
 from statsvisualizer import StatsVisualizer as statVis
 
 
-
-if __name__ == "__main__":
+def main():
     try:
         GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
-    except KeyError:
-        print("No GITHUB_TOKEN environment variable found")
-        #GITHUB_TOKEN = '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'
+        GITHUB_WEB_REPO = os.environ["GITHUB_WEB_REPO"]
+        GITHUB_SOT_REPO = os.environ["GITHUB_SOT_REPO"]
 
-    repo_url_web = "powervr-graphics/Native_SDK"
-    repo_url_sot = "powervr-graphics/PowerVR-Series1"
+    except KeyError:
+        print("Environment variables (GITHUB_TOKEN or REPOs) not set")
+        return
 
     sv = statVis()
     sv.init_github_user_info(GITHUB_TOKEN)
-    sv.add_github_repo_info(repo_url_web, output_dir='stats')
-    sv.add_github_repo_info(repo_url_sot, output_dir='stats')
+    sv.add_github_repo_info(GITHUB_WEB_REPO, output_dir='stats')
+    sv.add_github_repo_info(GITHUB_SOT_REPO, output_dir='stats')
     sv.collect_all_repos_stats()
+
+
+if __name__ == "__main__":
+    main()
