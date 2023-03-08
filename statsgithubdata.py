@@ -32,6 +32,7 @@ class GithubRepoStats:
         access_type = 'rb'
         write_function = pickle.load
         filedir = os.path.join(self._dir, "github_data")
+        print("Loading from stats from file...")
 
         if not os.path.isfile(filedir):
             if os.path.isfile(filedir+".json"):
@@ -48,6 +49,7 @@ class GithubRepoStats:
         file_handle.close()
 
     def __write_github_data_file(self, file_type='bin'):
+        print("Writing to " + file_type + " files...")
         file_handle = None
         filedir = os.path.join(self._dir, "github_data") if file_type == 'bin' else os.path.join(self._dir, "github_data.json")
         access_type = 'wb' if file_type == 'bin' else 'w'
@@ -62,6 +64,7 @@ class GithubRepoStats:
             file_handle.close()
 
     def __write_xlsx_workbook(self):
+        print("Writing xlsx workbook...")
         workbook_path = os.path.join(self._dir, "github_data.xlsx")
         xlsx_writer = pd.ExcelWriter(workbook_path, engine='xlsxwriter')
 
@@ -91,6 +94,8 @@ class GithubRepoStats:
         self.__collect_stargazers_stats()
 
     def __collect_referrals_stats(self):
+        print("Collecting referrals info...")
+
         date_string = str(date.today())
         referrals = self._repo.get_top_referrers()
         data_totals = self._github_data['referral_data']['data']
@@ -105,6 +110,7 @@ class GithubRepoStats:
                 data_totals[ref.referrer][1] += int(ref.uniques)
 
     def __collect_stargazers_stats(self):
+        print("Collecting star gazers info...")
         stardates = self._repo.get_stargazers_with_dates()
         # Remove empty usernames
         stardates = [x for x in stardates if x.user.name]
@@ -116,6 +122,7 @@ class GithubRepoStats:
             self._github_data['stargazers_data']['data'][str(stardate.starred_at.date())] += 1
 
     def __collect_visitors_stats(self):
+        print("Collecting views traffic...")
         visitors = self._repo.get_views_traffic()
 
         for visitor in visitors["views"]:
@@ -124,6 +131,7 @@ class GithubRepoStats:
                                                                                              visitor.uniques]
 
     def __collect_clones_stats(self):
+        print("Collecting colones traffic...")
         clones = self._repo.get_clones_traffic()
 
         for clone in clones["clones"]:
@@ -131,6 +139,7 @@ class GithubRepoStats:
                 self._github_data['clones_data']['data'][str(clone.timestamp.date())] = [clone.count, clone.uniques]
 
     def __collect_general_stats(self):
+        print("Collecting watches, forks, clones, stars, and views...")
         watches = self._repo.get_subscribers().totalCount
         forks = self._repo.get_forks().totalCount
         clones = self._repo.get_clones_traffic()
